@@ -37,7 +37,8 @@ body
                   object = link_to 'あなたがリポストしました', user_path(current_user.id)
             ul
               li
-                object = link_to image_tag(tweet.user.icon, alt: "Icon image", class: "icon_image", size: '50x50'), profile_path(tweet.user.id)
+                - if tweet.user.icon.attached?
+                 = link_to image_tag(tweet.user.icon , alt: "Icon image", class: "icon_image", size: '50x50') , profile_path(tweet.user.id)
               li 
                 object = link_to tweet.user.name, profile_path(tweet.user.id), class: 'link'
               li 投稿日： #{tweet.created_at.strftime('%Y/%m/%d %H:%M:%S')}
@@ -114,7 +115,8 @@ body
                     object = link_to 'あなたがリポストしました', user_path(current_user.id)
               ul
                 li
-                  object = link_to image_tag(tweet.user.icon, alt: "Icon image", class: "icon_image", size: '50x50'), profile_path(tweet.user.id)
+                  - if tweet.user.icon.attached?
+                    = link_to image_tag(tweet.user.icon, alt: "Icon image", class: "icon_image", size: '50x50') , profile_path(tweet.user.id)
                 li
                   object = link_to tweet.user.name, profile_path(tweet.user.id), class: 'link'
                 li 投稿日： #{tweet.created_at.strftime('%Y/%m/%d %H:%M:%S')}

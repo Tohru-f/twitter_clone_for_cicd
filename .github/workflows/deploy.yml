@@ -1,0 +1,78 @@
+name: Deploy work flow for AWS Elastic Container Service
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+env:
+  AWS_REGION: ap-northeast-1
+  REPOSITORY_NAME: twitter-clone-ecs
+  TASK_NAME: twitter-clone
+  ECS_SERVICE_NAME: twitter-clone-service
+  ECS_CLUSTER_NAME: twitter-clone-cluster
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ECR_ARN }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: rails-app push to ECR
+        id: build-image-rails-app
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build --platform linux/amd64 -t ${{ env.REGISTRY }}/${{ env.REPOSITORY_NAME }}:latest .
+          docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY_NAME }}:latest
+
+      - name: Update task definition image
+        id: update-task-definition
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          IMAGE_URI=${{ env.REGISTRY }}":latest"
+          aws ecs describe-task-definition \
+          --task-definition "$TASK_NAME" \
+          --query 'taskDefinition' \
+          --output json > current_task_def.json
+
+          jq --arg twitter_clone "$IMAGE_URI" '
+            .containerDefinition |= (
+              map(
+                if .name = "twitter_clone"
+                then .image = $twitter_clone
+                else .
+                end
+              )
+            )
+            | del(.revision, .status, .requiredAttributes, .compatibilities, .taskDefinitionArn, .registeredAt, .registeredBy)
+          ' current_task_def.json > new_task_def.json
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+          --cli-input-json file://new_task_def.json \
+          --query 'taskDefinition.taskDefinitionArn' \
+          --output text)
+          echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+          --cluster $ECS_CLUSTER_NAME \
+          --service $ECS_SERVICE_NAME \
+          --task-definition "${{ steps.update-task-definition.outputs.NEW_TASK_DEF_ARN }}"
+          --force-new-deployment
