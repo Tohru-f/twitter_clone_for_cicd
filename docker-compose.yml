@@ -9,4 +9,4 @@ services:
     environment:
       - RAILS_ENV=production
       - SECRET_KEY_BASE=$${SECRET_KEY_BASE} # $をescapeするために$を追加
-      - DATABASE_URL=$${DATABASE_URL}
+      - DATABASE_URL=$${DATABASE_URL} # $をescapeするために$を追加
