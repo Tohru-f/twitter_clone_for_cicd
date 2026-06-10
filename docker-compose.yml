@@ -9,4 +9,4 @@ services:
     environment:
       - RAILS_ENV=production
       - SECRET_KEY_BASE=$${SECRET_KEY_BASE} # $をescapeするために$を追加
-      - DATABASE_URL=postgresql://postgres:twitter-rds-2026@twitter-clone-db.cl0cm0o8yoe9.ap-northeast-1.rds.amazonaws.com:5432/twitter_clone_rds
+      - DATABASE_URL=$${DATABASE_URL}
