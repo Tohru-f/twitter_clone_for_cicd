@@ -15,8 +15,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: run htmlbeautifier on docker-compose
         env:
-          SECRET_KEY_BASE: ${{secrets.SECRET_KEY_BASE}}
-          DATABASE_URL: ${{secrets.DATABASE_URL}}
+          SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           docker compose build
           docker compose run --rm web bin/setup
