@@ -19,6 +19,10 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           docker compose build
+          DATABASE_URL=$DATABASE_URL SECRET_KEY_BASE=$SECRET_KEY_BASE \
           docker compose run --rm web bin/setup
+
+          DATABASE_URL=$DATABASE_URL SECRET_KEY_BASE=$SECRET_KEY_BASE \
           docker compose run --rm web bin/htmlbeautifier
+
           git diff --exit-code
