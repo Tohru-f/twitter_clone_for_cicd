@@ -24,7 +24,7 @@ jobs:
           docker compose build
 
           echo "Checking container variables..."
-          docker compose run --rm web env | grep
+          docker compose run --rm web env | grep DATABASE_URL
 
       - name: run htmlbeautifier on docker-compose
         env:
