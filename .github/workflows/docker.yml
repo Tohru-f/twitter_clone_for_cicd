@@ -13,6 +13,19 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+      - name: Debug environment
+        env:
+          SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          echo "Checking host variables..."
+          [[ -z "$DATABASE_URL" ]] && echo "DATABASE_URL is empty on host" || echo "DATABASE_URL is set on host
+
+          docker compose build
+
+          echo "Checking container variables..."
+          docker compose run --rm web env | grep
+
       - name: run htmlbeautifier on docker-compose
         env:
           SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
