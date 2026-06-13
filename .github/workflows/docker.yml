@@ -18,9 +18,9 @@ jobs:
         env:
           CI: 'true'
           SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: 'postgresql://invalid'
         run: |
           docker compose build
-          docker compose run --rm web bin/setup
-          docker compose run --rm web bin/htmlbeautifier
+          docker compose run --rm web bundle install
+          docker compose run --rm web bundle exec htmlbeautifier
           git diff --exit-code
