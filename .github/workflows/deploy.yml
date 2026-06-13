@@ -48,16 +48,15 @@ jobs:
       - name: Update task definition image
         id: update-task-definition
         env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_URI: ${{ steps.login-ecr.outputs.registry }}/${{ env.REPOSITORY_NAME }}:latest
         run: |
-          IMAGE_URI=${{ env.REGISTRY }}/${{ env.REPOSITORY_NAME }}:latest
           aws ecs describe-task-definition \
           --task-definition "$TASK_NAME" \
           --query 'taskDefinition' \
           --output json > current_task_def.json
 
-          jq --arg twitter_clone "$IMAGE_URI" '
-            .containerDefinition |= (
+          jq --arg twitter_clone ${{ env.IMAGE_URI }} '
+            .containerDefinitions |= (
               map(
                 if .name = "twitter_clone"
                 then .image = $twitter_clone
