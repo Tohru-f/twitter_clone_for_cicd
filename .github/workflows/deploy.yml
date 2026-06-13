@@ -64,7 +64,7 @@ jobs:
                 end
               )
             )
-            | del(.revision, .status, .requiredAttributes, .compatibilities, .taskDefinitionArn, .registeredAt, .registeredBy)
+            | del(.revision, .status, .requiresAttributes, .compatibilities, .taskDefinitionArn, .registeredAt, .registeredBy)
           ' current_task_def.json > new_task_def.json
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
           --cli-input-json file://new_task_def.json \
