@@ -16,6 +16,7 @@ env:
   TASK_NAME: twitter-clone
   ECS_SERVICE_NAME: twitter-clone-service
   ECS_CLUSTER_NAME: twitter-clone-cluster
+  LAUNCH_TYPE: FARGATE
 
 jobs:
   deploy:
@@ -24,20 +25,20 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Checkout
+      - name: Checkout # githubのコードを取得
         uses: actions/checkout@v6
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials # AWS側でOIDCでロールを使ってリソースを動かせるようにする
         uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
 
-      - name: Login to ECR
+      - name: Login to ECR # ECRにログインする
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: rails-app push to ECR
+      - name: rails-app push to ECR # イメージ化したコンテナ情報をECRへPushする
         id: build-image-rails-app
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -45,7 +46,7 @@ jobs:
           docker build --platform linux/amd64 -t ${{ env.REGISTRY }}/${{ env.REPOSITORY_NAME }}:latest .
           docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY_NAME }}:latest
 
-      - name: Update task definition image
+      - name: Update task definition image # タスク定義を取得してイメージ部分を書き換えたJSONを新しいタスク定義として作成
         id: update-task-definition
         env:
           IMAGE_URI: ${{ steps.login-ecr.outputs.registry }}/${{ env.REPOSITORY_NAME }}:latest
@@ -72,7 +73,25 @@ jobs:
           --output text)
           echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
 
-      - name: Deploy to ECS
+      - name: Run database migration # 更新したタスクでECSを再デプロイする前にマイグレーションを実行
+        run: |
+          aws ecs run-task \
+            --cluster $ECS_CLUSTER_NAME \
+            --launch-type $LAUNCH_TYPE \
+            --task-definition ${{ steps.update-task-definition.outputs.NEW_TASK_DEF_ARN }}\
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-0e52ed5e61c3be380, subnet-0dff4ab6d1ff1bc24], securityGroups=[sg-0bace422ef1b18d88],assignPublicIp=[ENABLED]}"
+            --overrides '{
+              "containerOverrides": [
+                  "name":"twitter_clone",
+                  "command": ["bundle", "exec", "rails", "db:migrate"],
+                  "environment": [
+                      {"name":"RAILS_ENV", "value":"production"},
+                      {"name":"DATABASE_URL","value":"${{ secrets.DATABASE_URL }}"}
+                    ]
+                ]
+            }'
+
+      - name: Deploy to ECS # 書き換えたタスク定義を元にECSのコンテナを起動し直す
         run: |
           aws ecs update-service \
           --cluster $ECS_CLUSTER_NAME \
