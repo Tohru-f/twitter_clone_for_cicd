@@ -73,13 +73,13 @@ jobs:
           --output text)
           echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
 
-      - name: Run database migration # 更新したタスクでECSを再デプロイする前にマイグレーションを実行
+      - name: Run database migration # 更新したタスクでECSを再デプロイする前にECSで１回だけタスクを起動してマイグレーションを実行
         run: |
-          aws ecs run-task \
+          aws ecs run-task \ # ECSでタスクを1回だけ実行する
             --cluster $ECS_CLUSTER_NAME \
             --launch-type $LAUNCH_TYPE \
             --task-definition ${{ steps.update-task-definition.outputs.NEW_TASK_DEF_ARN }}\
-            --network-configuration "awsvpcConfiguration={subnets=[subnet-0e52ed5e61c3be380, subnet-0dff4ab6d1ff1bc24], securityGroups=[sg-0bace422ef1b18d88],assignPublicIp=ENABLED}" \
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-056a765446308ab47, subnet-09578e83e9d1d47a9], securityGroups=[sg-0bace422ef1b18d88],assignPublicIp=ENABLED}" \
             --overrides '{
               "containerOverrides":[
                   {
