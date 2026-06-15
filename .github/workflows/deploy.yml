@@ -81,10 +81,10 @@ jobs:
             --task-definition ${{ steps.update-task-definition.outputs.NEW_TASK_DEF_ARN }}\
             --network-configuration "awsvpcConfiguration={subnets=[subnet-0e52ed5e61c3be380, subnet-0dff4ab6d1ff1bc24], securityGroups=[sg-0bace422ef1b18d88],assignPublicIp=ENABLED}" \
             --overrides '{
-              "containerOverrides": [
+              "containerOverrides":[
                   "name":"twitter_clone",
                   "command": ["bundle", "exec", "rails", "db:migrate"],
-                  "environment": [
+                  "environment":[
                       {"name":"RAILS_ENV", "value":"production"},
                       {"name":"DATABASE_URL","value":"${{ secrets.DATABASE_URL }}"}
                     ]
