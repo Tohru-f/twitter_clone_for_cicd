@@ -79,7 +79,7 @@ jobs:
             --cluster $ECS_CLUSTER_NAME \
             --launch-type $LAUNCH_TYPE \
             --task-definition ${{ steps.update-task-definition.outputs.NEW_TASK_DEF_ARN }}\
-            --network-configuration "awsvpcConfiguration={subnets=[subnet-0e52ed5e61c3be380, subnet-0dff4ab6d1ff1bc24], securityGroups=[sg-0bace422ef1b18d88],assignPublicIp=[ENABLED]}"
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-0e52ed5e61c3be380, subnet-0dff4ab6d1ff1bc24], securityGroups=[sg-0bace422ef1b18d88],assignPublicIp=ENABLED}"
             --overrides '{
               "containerOverrides": [
                   "name":"twitter_clone",
