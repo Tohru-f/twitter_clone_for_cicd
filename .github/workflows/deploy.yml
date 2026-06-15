@@ -79,7 +79,7 @@ jobs:
             --cluster $ECS_CLUSTER_NAME \
             --launch-type $LAUNCH_TYPE \
             --task-definition ${{ steps.update-task-definition.outputs.NEW_TASK_DEF_ARN }}\
-            --network-configuration "awsvpcConfiguration={subnets=[subnet-056a765446308ab47, subnet-09578e83e9d1d47a9], securityGroups=[sg-0bace422ef1b18d88],assignPublicIp=ENABLED}" \
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-056a765446308ab47, subnet-09578e83e9d1d47a9], securityGroups=[sg-04ab0c579f362eed4],assignPublicIp=ENABLED}" \
             --overrides '{
               "containerOverrides":[
                   {
