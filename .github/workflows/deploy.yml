@@ -82,12 +82,14 @@ jobs:
             --network-configuration "awsvpcConfiguration={subnets=[subnet-0e52ed5e61c3be380, subnet-0dff4ab6d1ff1bc24], securityGroups=[sg-0bace422ef1b18d88],assignPublicIp=ENABLED}" \
             --overrides '{
               "containerOverrides":[
-                  "name":"twitter_clone",
-                  "command":["bundle", "exec", "rails", "db:migrate"],
-                  "environment":[
-                      {"name":"RAILS_ENV", "value":"production"},
-                      {"name":"DATABASE_URL","value":"${{ secrets.DATABASE_URL }}"}
-                    ]
+                  {
+                    "name":"twitter_clone",
+                    "command":["bundle", "exec", "rails", "db:migrate"],
+                    "environment":[
+                        {"name":"RAILS_ENV", "value":"production"},
+                        {"name":"DATABASE_URL","value":"${{ secrets.DATABASE_URL }}"}
+                      ]
+                  }
                 ]
             }'
 
