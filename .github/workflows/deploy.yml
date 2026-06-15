@@ -83,7 +83,7 @@ jobs:
             --overrides '{
               "containerOverrides":[
                   {
-                    "name":"twitter_clone",
+                    "name":"rails-app",
                     "command":["bundle", "exec", "rails", "db:migrate"],
                     "environment":[
                         {"name":"RAILS_ENV", "value":"production"},
