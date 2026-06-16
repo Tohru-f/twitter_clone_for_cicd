@@ -75,7 +75,7 @@ jobs:
 
       - name: Run database migration # 更新したタスクでECSを再デプロイする前にECSで１回だけタスクを起動してマイグレーションを実行
         run: |
-          aws ecs run-task \ # ECSでタスクを1回だけ実行する
+          aws ecs run-task \
             --cluster $ECS_CLUSTER_NAME \
             --launch-type $LAUNCH_TYPE \
             --task-definition ${{ steps.update-task-definition.outputs.NEW_TASK_DEF_ARN }} \
