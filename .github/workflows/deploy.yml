@@ -59,7 +59,7 @@ jobs:
           jq --arg twitter_clone ${{ env.IMAGE_URI }} '
             .containerDefinitions |= (
               map(
-                if .name = "twitter_clone"
+                if .name == "twitter_clone"
                 then .image = $twitter_clone
                 else .
                 end
@@ -79,7 +79,7 @@ jobs:
             --cluster $ECS_CLUSTER_NAME \
             --launch-type $LAUNCH_TYPE \
             --task-definition ${{ steps.update-task-definition.outputs.NEW_TASK_DEF_ARN }} \
-            --network-configuration "awsvpcConfiguration={subnets=[subnet-056a765446308ab47, subnet-09578e83e9d1d47a9], securityGroups=[sg-04ab0c579f362eed4],assignPublicIp=ENABLED}" \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.AWS_SUBNET_1 }}, ${{ secrets.AWS_SUBNET_2 }}], securityGroups=[${{ secrets.AWS_SECURITY_GROUP }}],assignPublicIp=ENABLED}" \
             --overrides '{
               "containerOverrides":[
                   {
