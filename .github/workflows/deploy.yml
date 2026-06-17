@@ -75,7 +75,7 @@ jobs:
 
       - name: Run database migration # 更新したタスクでECSを再デプロイする前にECSで１回だけタスクを起動してマイグレーションを実行
         run: |
-          aws ecs run-task \
+          RUN_TASK_RESPONSE=$(aws ecs run-task \
             --cluster $ECS_CLUSTER_NAME \
             --launch-type $LAUNCH_TYPE \
             --task-definition ${{ steps.update-task-definition.outputs.NEW_TASK_DEF_ARN }} \
@@ -91,7 +91,12 @@ jobs:
                       ]
                   }
                 ]
-            }'
+            }')
+          TASK_ARN=$(echo "#RUN_TASK_RESPONSE" | jq -r '.tasks[0].taskArn')
+
+          aws ecs wait tasks-stopped \
+          --cluster SECS_CLUSTER_NAME \
+          --tasks $TASK_ARN
 
       - name: Deploy to ECS # 書き換えたタスク定義を元にECSのコンテナを起動し直す
         run: |
