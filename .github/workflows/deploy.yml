@@ -74,7 +74,8 @@ jobs:
           echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
 
       - name: Run database migration # 更新したタスクでECSを再デプロイする前にECSで１回だけタスクを起動してマイグレーションを実行
-        run: |
+        run:
+          | # run-taskの出力結果をjqコマンドで必要なtaskArnだけ取得して、tasks-stoppedの引数に使い、マイグレーションタスクの終了を待つ
           RUN_TASK_RESPONSE=$(aws ecs run-task \
             --cluster $ECS_CLUSTER_NAME \
             --launch-type $LAUNCH_TYPE \
@@ -92,10 +93,10 @@ jobs:
                   }
                 ]
             }')
-          TASK_ARN=$(echo "#RUN_TASK_RESPONSE" | jq -r '.tasks[0].taskArn')
+          TASK_ARN=$(echo "$RUN_TASK_RESPONSE" | jq -r '.tasks[0].taskArn')
 
           aws ecs wait tasks-stopped \
-          --cluster SECS_CLUSTER_NAME \
+          --cluster ${{ env.ECS_CLUSTER_NAME }} \
           --tasks $TASK_ARN
 
       - name: Deploy to ECS # 書き換えたタスク定義を元にECSのコンテナを起動し直す
